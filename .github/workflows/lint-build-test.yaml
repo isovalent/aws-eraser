@@ -1,4 +1,4 @@
-name: Go Lint and Build
+name: Go Lint, Build and Test
 
 on:
   pull_request:
@@ -19,8 +19,8 @@ jobs:
       - name: Lint
         uses: reviewdog/action-golangci-lint@53f8eabb87b40b1a2c63ec75b0d418bd0f4aa919 # v2.2.2
 
-  build:
-    name: Build
+  build-test:
+    name: Build and Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [ lint ]
@@ -36,3 +36,6 @@ jobs:
 
       - name: Build tool
         run: go build -v .
+
+      - name: Test
+        run: go test -v ./...
