@@ -9,6 +9,7 @@ import (
 	"aws-eraser/pkg/aws/auth"
 	"aws-eraser/pkg/log"
 	"aws-eraser/pkg/resources"
+	"github.com/hashicorp/go-multierror"
 )
 
 func Erase(ctx context.Context, autoApprove bool, duration time.Duration, resourceStr, fileName, fileFormat string) error {
@@ -23,7 +24,7 @@ func Erase(ctx context.Context, autoApprove bool, duration time.Duration, resour
 		return nil
 	}
 
-	logger.Info(fmt.Sprintf("the below resources will be deleted:\n\n%s", accountResources))
+	logger.Infof("the below resources will be deleted:\n\n%s", accountResources)
 	if !isApproved(ctx, autoApprove) {
 		return nil
 	}
@@ -32,10 +33,20 @@ func Erase(ctx context.Context, autoApprove bool, duration time.Duration, resour
 		return err
 	}
 
-	//TODO: start cleanup process
-	//ctx, cancel := context.WithTimeout(ctx, duration)
-	//defer cancel()
-	return nil
+	wg := multierror.Group{}
+	for account, res := range accountResources {
+		for _, r := range res {
+			acc := account
+			region := r.Region
+			rType := r.Type
+			rID := r.ID
+			wg.Go(func() error {
+				logger.Infof("deleting %s:%s %s %s", acc, region, rType, rID)
+				return fmt.Errorf("failed: %s", rID)
+			})
+		}
+	}
+	return wg.Wait().ErrorOrNil()
 }
 
 func isApproved(ctx context.Context, autoApprove bool) bool {
