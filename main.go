@@ -50,8 +50,10 @@ func run(_ *cobra.Command, _ []string) {
 		return
 	}
 	if err := eraser.Erase(ctx, *autoApprove, *duration, *resources, *fileName, *fileFormat); err != nil {
-		log.FromContext(ctx).Error(err)
+		log.FromContext(ctx).Errorf("failed: %s", err.Error())
+		return
 	}
+	log.FromContext(ctx).Info("finished successful!")
 }
 
 func checkParams() error {

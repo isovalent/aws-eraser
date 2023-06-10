@@ -83,8 +83,6 @@ func parseResourceString(resourceStr string) ([]Resource, error) {
 		switch len(parts) {
 		case 2:
 			rType, id = parts[0], parts[1]
-		case 3:
-			rType, region, id = parts[0], parts[1], parts[2]
 		case 4:
 			rType, account, region, id = parts[0], parts[1], parts[2], parts[3]
 		default:
